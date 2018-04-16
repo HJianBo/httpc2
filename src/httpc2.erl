@@ -61,7 +61,13 @@ basic_auth(Username, Password) ->
 %%--------------------------------------------------------------------
 
 request(Method, Request, HTTPOptions, Options) ->
+    request(Method, Request, HTTPOptions, Options, 0).
+
+request(Method, Request, HTTPOptions, Options, Times) ->
     case httpc:request(Method, Request, HTTPOptions, Options) of
+        %% XXX: a famous of bug on highly QPS
+        %% https://github.com/phoenixframework/phoenix/issues/1478
+        {error, socket_closed_remotely} when Times < 5 -> request(Method, Request, HTTPOptions, Options, Times+1);
         {error, Reason} -> {error, Reason};
         {ok, {{_Ver, Code, _CodeDesc}, Headers, Body}} ->
             {ok, Code, tune_body(get_value("content-type", Headers), Body)}
