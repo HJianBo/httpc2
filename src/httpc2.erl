@@ -118,6 +118,7 @@ to_string(V) when is_list(V) -> V.
 
 to_json(V) -> jsx:encode(V).
 
+tune_body(undefined, Body) -> Body;
 tune_body(ContentType, Body) ->
     case lists:member("application/json", string:tokens(string:to_lower(ContentType), ";")) of
         true ->
